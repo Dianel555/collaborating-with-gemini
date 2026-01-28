@@ -1,6 +1,7 @@
 ---
 name: collaborating-with-gemini
-description: Delegates coding tasks to Gemini CLI for prototyping, debugging, and code review. Use when needing algorithm implementation, bug analysis, or code quality feedback. Supports multi-turn sessions via SESSION_ID.
+description: |
+  Delegates coding tasks to Gemini CLI for prototyping, debugging, and code review. Use when: (1) Frontend/UI implementation, (2) React/Vue component design, (3) CSS/styling tasks, (4) HTML layout and structure, (5) Interactive UI prototyping. Triggers: "UI component", "frontend", "styling", "React component", "Vue component", "CSS", "design interface", "create layout", "interactive", "responsive design". IMPORTANT: Always use sandbox=false and request unified diff patches only. Supports multi-turn sessions via SESSION_ID.
 ---
 
 ## Quick Start
