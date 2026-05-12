@@ -86,6 +86,9 @@ def run_shell_command(cmd: List[str], cwd: Optional[str] = None) -> Generator[st
 
     # Windows .cmd/.bat files need cmd.exe wrapper (avoid shell=True for security)
     if os.name == "nt" and Path(exe_path).suffix.lower() in {".cmd", ".bat"}:
+        # cmd.exe truncates argv at embedded \n/\r/\t; escape as literals here only.
+        # .exe path (CreateProcess direct) preserves them, so we don't escape there.
+        popen_cmd = [windows_escape(a) for a in popen_cmd]
         # Escape shell metacharacters for cmd.exe
         def _cmd_quote(arg: str) -> str:
             if not arg:
@@ -209,11 +212,7 @@ def main():
         print(json.dumps(result, indent=2, ensure_ascii=False))
         return
 
-    PROMPT = args.PROMPT
-    if os.name == "nt":
-        PROMPT = windows_escape(PROMPT)
-
-    cmd = ["gemini", "--prompt", PROMPT, "-o", "stream-json"]
+    cmd = ["gemini", "--prompt", args.PROMPT, "-o", "stream-json"]
 
     if args.sandbox:
         cmd.extend(["--sandbox"])
@@ -237,12 +236,10 @@ def main():
             item_type = line_dict.get("type", "")
             item_role = line_dict.get("role", "")
             if item_type == "message" and item_role == "assistant":
-                if (
-                    "The --prompt (-p) flag has been deprecated and will be removed in a future version. Please use a positional argument for your prompt. See gemini --help for more information.\n"
-                    in line_dict.get("content", "")
-                ):
+                content = line_dict.get("content", "")
+                if "--prompt" in content and "deprecated" in content:
                     continue
-                agent_messages = agent_messages + line_dict.get("content", "")
+                agent_messages = agent_messages + content
             if line_dict.get("session_id") is not None:
                 thread_id = line_dict.get("session_id")
 
