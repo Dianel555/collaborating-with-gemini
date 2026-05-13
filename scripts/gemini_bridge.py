@@ -249,7 +249,8 @@ def main():
 
         except Exception as error:
             err_message += "\n\n[unexpected error] " + f"Unexpected error: {error}. Line: {line!r}"
-            break
+            success = False if len(agent_messages) == 0 else success
+            continue
     
     result = {}
     
@@ -265,6 +266,12 @@ def main():
             "Failed to retrieve `agent_messages` data from the Gemini session. This might be due to Gemini performing a tool call. You can continue using the `SESSION_ID` to proceed with the conversation. \n\n "
             + err_message
         )
+    elif thread_id is not None:
+        # Symmetric guard with codex_bridge v0.0.6: transient errors mid-stream
+        # must not bury the final answer when the turn actually completed and
+        # produced an assistant message.
+        success = True
+        err_message = ""
     
     
     if success:
